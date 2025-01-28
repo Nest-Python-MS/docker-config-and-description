@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+
+  nats-server:
+    image: nats:latest
+    container_name: nats-server
+    ports:
+      - "8222:8222"
+      - "4222:4222"
+    restart: always
+
+  client-gateway:
+    build: ./client-gateway
+    container_name: client-gateway
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client-gateway/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3000
+      - NATS_SERVERS=nats://nats-server:4222
+    depends_on:
+      - nats-server
+    restart: on-failure
+
+  # users-ms:
+  #   build: ./users-ms
+  #   container_name: users-ms
+  #   volumes:
+  #     - ./users-ms/src:/usr/src/app/src
+  #   command: npm run start:dev
+  #   environment:
+  #     - PORT=3001
+  #     - NATS_SERVERS="nats://localhost:4222"
+  #     - DATABASE_URL=file:./dev.db
+  #   depends_on:
+  #     - nats-server
+  #     - client-gateway
+  #   restart: on-failure 
+
+  # front-app:
+  #   build: ./front-app
+  #   ports:
+  #     - "5173:5173"
+  #   volumes:
+  #     - ./src:/app/src
+  #   command: npm run dev
+  #   environment:
+  #     - NODE_ENV=production
+  #   restart: always    
+
